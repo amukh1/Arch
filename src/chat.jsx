@@ -1,55 +1,103 @@
-import React,{useState}  from 'react'
+import React,{useState, useEffect}  from 'react'
 import ReactDOM from 'react-dom/client'
 import './App.css'
 import Msgs from './msgs.jsx'
 
+let once = 1
+
 export default function Chat() {
+
     let room = window.location.hash.slice(1)
 
-    const [msgs, setMsgs] = useState([
+    // const [counter, setCounter] = useState(0)
+/*
+[
         { user: 'amukh1', msg: 'I am fine', time: '12:03' },
         { user: 'amukh1', msg: 'How are you?', time: '12:02' },
         { user: 'amukh1', msg: 'Hello', time: '12:01' },
-        ])
+        ]
+        */
 
-        const [users, setUsers] = useState([
-            { user: 'amukh1', status: 'online' },
-            { user: 'amukh2', status: 'offline' },
-        ])
+
+    const [msgs, setMsgs] = useState([])
+
+        const [users, setUsers] = useState([])
 
 //   const inc = () => {
 //     setData(counter + 1)
 //   }
 
 document.title = `Room: ${room}`
-let user = 'amukh1'
+// let user = 'amukh1'
+let user;
 let Part = 4
 
 
+useEffect(()=>{
+    user = prompt('Enter your name')
+    // do stuff here...
+    const ws = new WebSocket('wss://' + 'api.arch.amukh1.dev');
+    ws.onopen = function() {
+        console.log('WebSocket Client Connected');
+        ws.send(JSON.stringify({
+            type: 'join',
+            room: room,
+            user: user,
+        }));
+    };
+    ws.onmessage = function(e) {
+        let data = JSON.parse(e.data)
+        console.log("Received: ");
+        console.log(data);
+
+        if(data.type == 'msg'){
+            if(data.user == user){
+                console.log('same user msg rte?')
+            }else if(data.room == room){
+                console.log('same room msg rte?')
+            setMsgs((og)=> {
+                // return [ ...og,data.msg]
+                return data.msgs
+            })
+        }else {
+            console.log('not same room')
+        }
+        }else if(data.type == 'userJoin'){
+            if(data.user == user){
+                console.log('same user join rte?')
+                setMsgs(data.msgs)
+            }
+            setUsers(data.users)
+            alert(`${data.user} joined the room`)
+        }
+      };
+
 document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && document.getElementById('msges').value !== '') {
-            let msg = document.getElementById('msges').value
-        let time = new Date().toLocaleTimeString()
-            // console.log(msgs.toString())
-            // console.log(msges)
-            // console.log([{ user:user, msg:msg, time:time }])
-            // return [...msgs, { user, msg, time }]
-            // return msgs.concat({ user, msg, time })
-         
-        // data.msgs.push({ user, msg, time })
-        // let d = data
-        // setData(()=> {
-        //     return data
-        // })
-        // console.log(data)
-        let x = msgs
-        x.push({ user, msg, time })
-        setMsgs(x)
-        // console.log(msgs)
-        // console.log(msgs.map(e=>(e)))
-        document.getElementById('msges').value = ''
-    }
+if (e.key === 'Enter' && document.getElementById('msges').value !== '') {
+    setMsgs((og)=> {
+        return [ ...og,{user, time: new Date().toLocaleTimeString(), msg:document.getElementById('msges').value }]
+    })
+    ws.send(JSON.stringify({
+        type: 'msg',
+        room: room,
+        user: user,
+        msg: {user, time: new Date().toLocaleTimeString(), msg:document.getElementById('msges').value }
+    }));
+    setTimeout(()=>{document.getElementById('msges').value = ''},0)
+}
+// else if(e.key === 'e'){
+//     setUsers((og)=> {
+//         return [...og,{ user: 'amukh1', status: 'online' }, ]
+//     })
+//     console.log('e')
+// }
 })
+}, []) // <-- empty dependency array
+  
+
+        
+
+
 
 
   return (
@@ -73,9 +121,26 @@ Room: {room}, Logged in as: {user}, {Part} Participants, {new Date().toDateStrin
 
 
 {console.log('RENDERING!!')}
-{console.log(msgs)}
+{/* {console.log(msgs)} */}
+
             <Msgs msgs={msgs} />
 
+            {/* {msgs.map((m, i) => (
+                <div className="chat-message">
+                <div className="chat-message-header">
+                <span className="chat-message-header-user msg-author msgh">{m.user}</span>
+                -
+                    <span className="chat-message-header-time msg-time msgh">{m.time}</span>
+                    <div className="chat-message-content">{m.msg}</div>
+                </div>
+
+            </div>
+            ))} */}
+
+            {/* <button onClick={()=>{setMsgs([{user, time: new Date().toLocaleTimeString(), msg:document.getElementById('msges').value }, ...msgs])}}>send msg</button> */}
+{/* {
+    ()=>{setMsgs([{user, time: new Date().toLocaleTimeString(), msg:document.getElementById('msges').value }, ...msgs])}
+} */}
 
             {/* {msgs.toString()} */}
 
@@ -97,12 +162,22 @@ Room: {room}, Logged in as: {user}, {Part} Participants, {new Date().toDateStrin
             <div className="chat-header">Users</div>
             <div className="chat-users-body">
 
+
+{/* 
+                {console.log('rendering')}
+                {counter}
+                <button onClick={() => setCounter(counter + 1)}>+</button> */}
+
+
+
                 {users.map((u, i) => (
                     <div className="chat-user">
                     <div className="chat-user-name m">{u.user}:</div>
                     <div className="chat-user-status m">{u.status}</div>
                 </div>
                 ))}
+
+                
 
 </div>
 

@@ -27,7 +27,7 @@ import Chat from './chat.jsx'
 // })
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-	<React.StrictMode>
+	// <React.StrictMode>
         <Chat />
-	</React.StrictMode>
+	// </React.StrictMode>
 )
