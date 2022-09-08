@@ -1,1 +1,0 @@
-import{j as t,a as e,c as r,R as a}from"./jsx-runtime.b09d579d.js";function c(){return t("main",{children:["React \u269B\uFE0F + Vite \u26A1",e("br",{}),e("a",{href:"https://amukh1.dev",children:"website"})]})}r.createRoot(document.getElementById("root")).render(e(a.StrictMode,{children:e(c,{})}));
